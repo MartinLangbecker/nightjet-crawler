@@ -1,6 +1,5 @@
 package eu.twatzl.njcrawler.model.st
 
-import eu.twatzl.njcrawler.model.Station
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 

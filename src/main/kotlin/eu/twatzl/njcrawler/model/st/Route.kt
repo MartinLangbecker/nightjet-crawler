@@ -1,6 +1,5 @@
 package eu.twatzl.njcrawler.model.st
 
-import eu.twatzl.njcrawler.model.es.Availability
 import kotlinx.serialization.Serializable
 
 @Serializable
