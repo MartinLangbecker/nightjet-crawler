@@ -6,6 +6,7 @@ import eu.twatzl.njcrawler.data.allNightjets
 import eu.twatzl.njcrawler.data.allSnalltagets
 import eu.twatzl.njcrawler.model.SimplifiedConnection
 import eu.twatzl.njcrawler.model.TrainConnection
+import eu.twatzl.njcrawler.model.st.Route
 import eu.twatzl.njcrawler.service.ESCrawlerService
 import eu.twatzl.njcrawler.service.NightjetCrawlerService
 import eu.twatzl.njcrawler.service.PersistenceService
@@ -19,6 +20,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import kotlinx.datetime.LocalDate
+import kotlin.math.roundToInt
 
 // configuration
 const val writeCSVPerTrain = true
@@ -118,15 +120,31 @@ suspend fun getDataForSt(httpClient: HttpClient) {
     for (i in 2..9) {
         val travelDate = LocalDate.parse("2024-01-0$i")
         allSnalltagets.forEach {
-            println("checking connections on $travelDate for train ${it.trainId}: ${it.fromStation.name} - ${it.toStation.name}...")
             val result = client.getOffer(it.fromStation.id, it.toStation.id, travelDate)
 
             if (result == null || result.offer.travels[0].routes.isEmpty()) {
                 println("no connections found")
             } else {
-                println(result.toString())
+                result.offer.travels[0].routes.filter { route -> route.legs.size == 1 }
+                    .forEach { route ->
+                        println(
+                            "lowest price for train ${it.trainId}: ${it.fromStation.name} - ${it.toStation.name} on $travelDate: ${route.lowestPrice} SEK (${
+                                sekToEur(
+                                    route.lowestPrice
+                                )
+                            } €)"
+                        )
+                    }
             }
         }
+    }
+}
+
+private fun sekToEur(sek: Float?): Float? {
+    return if (sek == null) {
+        null
+    } else {
+        (sek * 0.089461f * 100).roundToInt() / 100.0f
     }
 }
 

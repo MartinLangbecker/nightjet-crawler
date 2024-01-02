@@ -19,7 +19,7 @@ data class SnalltagetJourney(
             val id: String,
             val name: String,
             val code: String,
-            val description: String = "", // mostly nonexistent
+            val description: String = "",
             val travelClass: String = "",
             val flexLevel: String = "",
             val comfortClass: String = "",

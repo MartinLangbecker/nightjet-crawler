@@ -4,6 +4,7 @@ import eu.twatzl.njcrawler.model.st.SearchJourneyRequest
 import eu.twatzl.njcrawler.model.st.SnalltagetAccessToken
 import eu.twatzl.njcrawler.model.st.SnalltagetJourney
 import eu.twatzl.njcrawler.model.st.SnalltagetStationResponse
+import eu.twatzl.njcrawler.util.getCurrentTime
 import eu.twatzl.njcrawler.util.getFormattedDate
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -40,7 +41,7 @@ class SnalltagetClient(
             bearerAuth(token!!.accessToken)
             contentType(ContentType.Application.Json)
             setBody(SearchJourneyRequest(fromLocationId, toLocationId, date))
-        }.body<SnalltagetJourney?>()
+        }.body<SnalltagetJourney?>() // seems to always return an object even when connections found
     }
 
     suspend fun getStations(): SnalltagetStationResponse {
@@ -58,13 +59,10 @@ class SnalltagetClient(
     }
 
     private fun isTokenValid(token: SnalltagetAccessToken): Boolean {
-        return Clock.System.now().epochSeconds < token.retrievedAt.epochSeconds + token.expiresIn
+        return getCurrentTime().epochSeconds < token.retrievedAt.epochSeconds + token.expiresIn
     }
 
     private suspend fun refreshToken() {
-        // TODO remove after testing
-        println("refreshToken was called")
-
         token = getToken()
     }
 

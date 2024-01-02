@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 class PassengerFare(
     val passengerId: String,
     val tariffCode: String,
-    val price: Float,
+    val price: Float, // in SEK
 )

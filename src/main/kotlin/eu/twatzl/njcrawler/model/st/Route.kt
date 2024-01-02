@@ -9,7 +9,7 @@ data class Route(
     val bundles: Array<Bundle>,
     val bundleAvailability: BundleAvailability,
     val travelDuration: String, // ISO duration string, e.g. "PT16H10M"
-    val lowestPrice: Float? = null,
+    val lowestPrice: Float? = null, // in SEK
 ) {
     @Serializable
     data class BundleAvailability(

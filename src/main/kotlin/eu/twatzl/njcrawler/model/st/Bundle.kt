@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Bundle(
     val id: String,
-    val originalPrice: Float,
-    val price: Float,
+    val originalPrice: Float, // in SEK
+    val price: Float, // in SEK
     val productFamilyId: String,
     val requiredItems: Array<RequiredItem>,
     val options: Array<Option>,

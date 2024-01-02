@@ -13,7 +13,7 @@ data class RequiredItem(
     val productCode: String,
     val passengerFares: Array<PassengerFare>,
     val required: Boolean,
-    val price: Float,
+    val price: Float, // in SEK
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
