@@ -9,9 +9,7 @@ import io.ktor.http.*
 class OEBBAccessTokenClient(
     private val httpClient: HttpClient,
 ) {
-    companion object {
-        val endpoint = "https://shop.oebbtickets.at/api/domain/v1"
-    }
+    private val endpoint = "https://shop.oebbtickets.at/api/domain/v1"
 
     suspend fun getToken(): OebbAccessToken {
         val url = Url("$endpoint/anonymousToken")

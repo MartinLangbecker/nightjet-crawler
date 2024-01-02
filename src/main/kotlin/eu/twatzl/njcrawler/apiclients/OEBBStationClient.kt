@@ -9,9 +9,8 @@ import io.ktor.http.*
 class OEBBStationClient(
     private val httpClient: HttpClient,
 ) {
-    companion object {
-        val endpoint = "https://shop.oebbtickets.at/api/hafas/v1"
-    }
+    private val endpoint = "https://shop.oebbtickets.at/api/hafas/v1"
+
 
     /**
      * query stations by name from hafas

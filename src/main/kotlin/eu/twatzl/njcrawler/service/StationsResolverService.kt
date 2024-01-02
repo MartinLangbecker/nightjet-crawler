@@ -14,7 +14,7 @@ class StationsResolverService(
     suspend fun getStationByName(name: String): List<String>? {
         val token = tokenClient.getToken()
 
-        return stationsClient.getByName(token.access_token, name)
+        return stationsClient.getByName(token.accessToken, name)
             ?.filterNotNull()
             ?.map { it ->
                 val stationName = if (it.name.isEmpty()) it.meta else it.name
@@ -26,7 +26,7 @@ class StationsResolverService(
         val token = tokenClient.getToken()
 
         return stationsToCrawl.map { name ->
-            val queryResult = stationsClient.getByName(token.access_token, name)
+            val queryResult = stationsClient.getByName(token.accessToken, name)
                 ?.filterNotNull()
                 ?.map {
                     val stationName = it.name.ifEmpty { it.meta }
