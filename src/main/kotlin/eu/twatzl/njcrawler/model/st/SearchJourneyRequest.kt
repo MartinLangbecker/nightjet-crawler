@@ -7,7 +7,6 @@ data class SearchJourneyRequest(
     val origin: String, // station ID
     val destination: String, // station ID
     val departure: String, // date, YYYY-MM-DD
-    val oppositedate: String? = null, // date, YYYY-MM-DD
     val passengers: Array<Passenger> = arrayOf(
         Passenger(
             type = "AD"
@@ -24,7 +23,6 @@ data class SearchJourneyRequest(
         if (origin != other.origin) return false
         if (destination != other.destination) return false
         if (departure != other.departure) return false
-        if (oppositedate != other.oppositedate) return false
         if (!passengers.contentEquals(other.passengers)) return false
         if (travelWithpet != other.travelWithpet) return false
 
@@ -35,7 +33,6 @@ data class SearchJourneyRequest(
         var result = origin.hashCode()
         result = 31 * result + destination.hashCode()
         result = 31 * result + departure.hashCode()
-        result = 31 * result + (oppositedate?.hashCode() ?: 0)
         result = 31 * result + passengers.contentHashCode()
         result = 31 * result + travelWithpet.hashCode()
         return result

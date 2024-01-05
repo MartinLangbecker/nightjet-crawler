@@ -8,26 +8,29 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SnalltagetJourney(
-    val offer: SnalltagetOffer,
-    val messages: Array<String>,
+    val offer: SnalltagetOffer
 ) {
     @Serializable
     data class SnalltagetOffer(
-        val productFamilies: Array<ComfortOption>,
-        val comfortZones: Array<ComfortOption>,
         val travels: Array<Travel>,
-        val passengers: Array<Passenger>,
     ) {
         @Serializable
-        data class ComfortOption(
-            val id: String,
-            val name: String,
-            val code: String,
-            val description: String = "",
-            val travelClass: String = "",
-            val flexLevel: String = "",
-            val comfortClass: String = "",
-        )
+        data class Travel(
+            val routes: Array<Route>
+        ) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as Travel
+
+                return routes.contentEquals(other.routes)
+            }
+
+            override fun hashCode(): Int {
+                return routes.contentHashCode()
+            }
+        }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -35,39 +38,12 @@ data class SnalltagetJourney(
 
             other as SnalltagetOffer
 
-            if (!productFamilies.contentEquals(other.productFamilies)) return false
-            if (!comfortZones.contentEquals(other.comfortZones)) return false
-            if (!travels.contentEquals(other.travels)) return false
-            if (!passengers.contentEquals(other.passengers)) return false
-
-            return true
+            return travels.contentEquals(other.travels)
         }
 
         override fun hashCode(): Int {
-            var result = productFamilies.contentHashCode()
-            result = 31 * result + comfortZones.contentHashCode()
-            result = 31 * result + travels.contentHashCode()
-            result = 31 * result + passengers.contentHashCode()
-            return result
+            return travels.contentHashCode()
         }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SnalltagetJourney
-
-        if (offer != other.offer) return false
-        if (!messages.contentEquals(other.messages)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = offer.hashCode()
-        result = 31 * result + messages.contentHashCode()
-        return result
     }
 
     fun toSimplified(trainId: String, retrievedAt: Instant): SimplifiedConnection? {

@@ -4,17 +4,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Route(
-    val id: String,
     val legs: Array<Leg>,
-    val bundles: Array<Bundle>,
-    val bundleAvailability: BundleAvailability,
-    val travelDuration: String, // ISO duration string, e.g. "PT16H10M"
-    val lowestPrice: Float? = null, // in SEK
+    val bundles: Array<Bundle>
 ) {
     @Serializable
-    data class BundleAvailability(
-        val logicalAvailability: Boolean,
-        val availability: Boolean,
+    data class Leg(
+        val departureStation: SnalltagetStationSimple,
+        val arrivalStation: SnalltagetStationSimple,
+        val serviceName: String // contains train number
+    )
+
+    @Serializable
+    data class Bundle(
+        val price: Float, // in SEK
+        val productFamilyId: String,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -23,23 +26,15 @@ data class Route(
 
         other as Route
 
-        if (id != other.id) return false
         if (!legs.contentEquals(other.legs)) return false
         if (!bundles.contentEquals(other.bundles)) return false
-        if (bundleAvailability != other.bundleAvailability) return false
-        if (travelDuration != other.travelDuration) return false
-        if (lowestPrice != other.lowestPrice) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + legs.contentHashCode()
+        var result = legs.contentHashCode()
         result = 31 * result + bundles.contentHashCode()
-        result = 31 * result + bundleAvailability.hashCode()
-        result = 31 * result + travelDuration.hashCode()
-        result = 31 * result + lowestPrice.hashCode()
         return result
     }
 }
