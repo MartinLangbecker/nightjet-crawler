@@ -89,9 +89,9 @@ class NightjetCrawlerService(
         result.onSuccess {
             offers.addAll(it)
             if (it.isEmpty()) {
-                println("$trainId ${fromStation.name} - ${toStation.name}: no connections for $startTime")
+                println("$trainId ${fromStation.name} - ${toStation.name}: no connection on $startTime")
             } else {
-                println("$trainId: request ok for $startTime")
+                println("$trainId: found connection on $startTime")
             }
         }
 

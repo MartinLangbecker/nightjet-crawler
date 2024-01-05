@@ -6,11 +6,7 @@ import eu.twatzl.njcrawler.data.allNightjets
 import eu.twatzl.njcrawler.data.allSnalltagets
 import eu.twatzl.njcrawler.model.SimplifiedConnection
 import eu.twatzl.njcrawler.model.TrainConnection
-import eu.twatzl.njcrawler.model.st.Route
-import eu.twatzl.njcrawler.service.ESCrawlerService
-import eu.twatzl.njcrawler.service.NightjetCrawlerService
-import eu.twatzl.njcrawler.service.PersistenceService
-import eu.twatzl.njcrawler.service.StationsResolverService
+import eu.twatzl.njcrawler.service.*
 import eu.twatzl.njcrawler.util.getCurrentTime
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -19,8 +15,6 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import kotlinx.datetime.LocalDate
-import kotlin.math.roundToInt
 
 // configuration
 const val writeCSVPerTrain = true
@@ -39,10 +33,10 @@ suspend fun main() {
 
     val njConnections = getDataForNightjets(httpClient)
     val esConnections = getDataForES(httpClient)
-    getDataForSt(httpClient)
+    val stConnections = getDataForSt(httpClient)
 
     // combine connections of different operators
-    val allConnections = njConnections + esConnections
+    val allConnections = njConnections + esConnections + stConnections
 
     if (writeCSVPerTrain) {
         allConnections.forEach { (train, connections) ->
@@ -101,7 +95,7 @@ suspend fun getDataForNightjets(httpClient: HttpClient): Map<TrainConnection, Li
     val bookingClient = OEBBNightjetBookingClient(httpClient)
     val nightjetCrawlerService = NightjetCrawlerService(bookingClient)
 
-    return nightjetCrawlerService.requestData(allNightjets, totalTrainsRequested, getCurrentTime())
+    return nightjetCrawlerService.requestData(allNightjets, totalTrainsRequested)
 }
 
 suspend fun getDataForES(httpClient: HttpClient): Map<TrainConnection, List<SimplifiedConnection>> {
@@ -109,43 +103,15 @@ suspend fun getDataForES(httpClient: HttpClient): Map<TrainConnection, List<Simp
     val client = EuropeanSleeperClient(httpClient)
     val esCrawlerService = ESCrawlerService(client)
 
-    return esCrawlerService.requestData(allEuropeanSleepers, totalTrainsRequested, getCurrentTime())
+    return esCrawlerService.requestData(allEuropeanSleepers, totalTrainsRequested)
 }
 
-suspend fun getDataForSt(httpClient: HttpClient) {
+suspend fun getDataForSt(httpClient: HttpClient): Map<TrainConnection, List<SimplifiedConnection>> {
     // define services
     val client = SnalltagetClient(httpClient)
+    val stCrawlerService = STCrawlerService(client)
 
-    // TODO remove logic after testing
-    for (i in 2..9) {
-        val travelDate = LocalDate.parse("2024-01-0$i")
-        allSnalltagets.forEach {
-            val result = client.getOffer(it.fromStation.id, it.toStation.id, travelDate)
-
-            if (result == null || result.offer.travels[0].routes.isEmpty()) {
-                println("no connections found")
-            } else {
-                result.offer.travels[0].routes.filter { route -> route.legs.size == 1 }
-                    .forEach { route ->
-                        println(
-                            "lowest price for train ${it.trainId}: ${it.fromStation.name} - ${it.toStation.name} on $travelDate: ${route.lowestPrice} SEK (${
-                                sekToEur(
-                                    route.lowestPrice
-                                )
-                            } €)"
-                        )
-                    }
-            }
-        }
-    }
-}
-
-private fun sekToEur(sek: Float?): Float? {
-    return if (sek == null) {
-        null
-    } else {
-        (sek * 0.089461f * 100).roundToInt() / 100.0f
-    }
+    return stCrawlerService.requestData(allSnalltagets, totalTrainsRequested, getCurrentTime())
 }
 
 private fun setupHttpClient() = HttpClient(CIO) {

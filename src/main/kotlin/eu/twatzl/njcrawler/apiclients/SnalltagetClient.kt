@@ -10,8 +10,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Instant
 
 class SnalltagetClient(
     private val httpClient: HttpClient,
@@ -19,13 +18,14 @@ class SnalltagetClient(
     companion object {
         private var token: SnalltagetAccessToken? = null
     }
+
     private val baseUrl = "https://apiv2.snalltaget.se"
     private val tokenEndpoint = "https://www.snalltaget.se/token/v2"
 
     suspend fun getOffer(
         fromLocationId: String,
         toLocationId: String,
-        travelDate: LocalDate
+        travelDate: Instant
     ): SnalltagetJourney? {
         if (token == null || !isTokenValid(token!!)) refreshToken()
 

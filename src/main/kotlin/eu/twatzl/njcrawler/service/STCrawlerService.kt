@@ -1,6 +1,6 @@
 package eu.twatzl.njcrawler.service
 
-import eu.twatzl.njcrawler.apiclients.EuropeanSleeperClient
+import eu.twatzl.njcrawler.apiclients.SnalltagetClient
 import eu.twatzl.njcrawler.model.SimplifiedConnection
 import eu.twatzl.njcrawler.model.Station
 import eu.twatzl.njcrawler.model.TrainConnection
@@ -9,11 +9,8 @@ import eu.twatzl.njcrawler.util.getTimezone
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
 
-class ESCrawlerService(
-    private val bookingClient: EuropeanSleeperClient
-) {
+class STCrawlerService(private val bookingClient: SnalltagetClient) {
     suspend fun requestData(
         trains: List<TrainConnection>,
         totalTrainsRequested: Int,
@@ -43,36 +40,33 @@ class ESCrawlerService(
         fromStation: Station,
         toStation: Station,
         startTime: Instant,
-        totalTrainsRequested: Int,
+        totalTrainsRequested: Int
     ): List<SimplifiedConnection> {
         val offers = mutableListOf<SimplifiedConnection>()
         var time = startTime
 
         repeat(totalTrainsRequested) { _ ->
-            offers.addAll(callESApiSafe(trainId, fromStation, toStation, time))
+            offers.addAll(callSTApiSafe(trainId, fromStation, toStation, time))
             time = time.plus(1, DateTimeUnit.DAY, getTimezone())
         }
 
         return offers.distinctBy { it.departure }
     }
 
-    private suspend fun callESApiSafe(
+    private suspend fun callSTApiSafe(
         trainId: String,
         fromStation: Station,
         toStation: Station,
         startTime: Instant,
-        maxRequests: Int = 3,
+        maxRequests: Int = 3
     ): List<SimplifiedConnection> {
-        val trainNumber = trainId.substring(3) // remove prefix "ES " for API request
-        val travelDate = startTime.toLocalDateTime(getTimezone())
         val offers = mutableListOf<SimplifiedConnection>()
 
         val result = runCatching {
             bookingClient.getOffer(
-                trainNumber,
                 fromStation.id,
                 toStation.id,
-                travelDate,
+                startTime,
             )?.toSimplified(trainId, getCurrentTime())
         }
 
