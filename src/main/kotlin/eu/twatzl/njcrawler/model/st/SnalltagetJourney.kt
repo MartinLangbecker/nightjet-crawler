@@ -64,8 +64,13 @@ data class SnalltagetJourney(
             leg.arrivalStation.name,
             leg.departureStation.departureTimestamp!!.toInstant(getTimezone()),
             leg.arrivalStation.arrivalTimestamp!!.toInstant(getTimezone()),
-            route.bundles.filter { it.productFamilyId == "SP" }.minOfOrNull { it.price },
-            route.bundles.filter { it.productFamilyId == "NTB" }.minOfOrNull { it.price },
+            // SP = seat, SPSC = seat in compartment, SPPC = private compartment with seats
+            // FCS(C) = first class seat (in compartment), FCPC = private compartment with first class seats
+            route.bundles.filter { it.productFamilyId == "SP" || it.productFamilyId == "SPSC" || it.productFamilyId == "SPPC" || it.productFamilyId == "FCS" || it.productFamilyId == "FCSC" || it.productFamilyId == "FCPC" }
+                .minOfOrNull { it.price },
+            // NTB = berth in shared compartment, NTPC(C/E) = private compartment (comfort/extra passenger)
+            route.bundles.filter { it.productFamilyId == "NTB" || it.productFamilyId == "NTPC" || it.productFamilyId == "NTPCC" || it.productFamilyId == "NTPCE" }
+                .minOfOrNull { it.price },
             null, // sleeper doesn't exist on Snalltaget, only private compartments
             retrievedAt
         )
