@@ -63,7 +63,7 @@ class ESCrawlerService(
         startTime: Instant,
         maxRequests: Int = 3,
     ): List<SimplifiedConnection> {
-        val trainNumber = trainId.substring(3) // remove prefix "ES " for API request
+        val trainNumber = trainId.split(" ").last() // remove train type for API request
         val travelDate = startTime.toLocalDateTime(getTimezone())
         val offers = mutableListOf<SimplifiedConnection>()
 

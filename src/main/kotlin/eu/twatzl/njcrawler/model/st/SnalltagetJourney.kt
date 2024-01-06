@@ -47,8 +47,7 @@ data class SnalltagetJourney(
     }
 
     fun toSimplified(trainId: String, retrievedAt: Instant): SimplifiedConnection? {
-        // remove prefix "D " from trainId
-        val trainNumber = trainId.substring(2)
+        val trainNumber = trainId.split(" ").last() // remove train type for API request
 
         // result should contain direct route of given train number
         if (this.offer.travels[0].routes.none { it.legs.size == 1 && it.legs[0].serviceName == trainNumber }) {
@@ -71,7 +70,7 @@ data class SnalltagetJourney(
             // NTB = berth in shared compartment, NTPC(C/E) = private compartment (comfort/extra passenger)
             route.bundles.filter { it.productFamilyId == "NTB" || it.productFamilyId == "NTPC" || it.productFamilyId == "NTPCC" || it.productFamilyId == "NTPCE" }
                 .minOfOrNull { it.price },
-            null, // sleeper doesn't exist on Snalltaget, only private compartments
+            null, // sleeper doesn't exist on Snalltaget, only private couchette compartments; comfort compartment could be considered as sleeper since it has already made-up beds and breakfast in dining car is included
             retrievedAt
         )
     }
