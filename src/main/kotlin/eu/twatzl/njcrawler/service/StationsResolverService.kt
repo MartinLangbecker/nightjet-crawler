@@ -17,23 +17,14 @@ class StationsResolverService(
         return stationsClient.getByName(token.accessToken, name)
             ?.filterNotNull()
             ?.map { it ->
-                val stationName = if (it.name.isEmpty()) it.meta else it.name
+                val stationName = it.name.ifEmpty { it.meta }
                 "$stationName: ${it.number}"
             }
     }
 
     suspend fun getStationsBulk(stationsToCrawl: List<String>): List<StationQueryResult> {
-        val token = tokenClient.getToken()
-
-        return stationsToCrawl.map { name ->
-            val queryResult = stationsClient.getByName(token.accessToken, name)
-                ?.filterNotNull()
-                ?.map {
-                    val stationName = it.name.ifEmpty { it.meta }
-                    "$stationName: ${it.number}"
-                }
-
-            StationQueryResult(name, queryResult)
+        return stationsToCrawl.map {
+            StationQueryResult(it, getStationByName(it))
         }
     }
 }
