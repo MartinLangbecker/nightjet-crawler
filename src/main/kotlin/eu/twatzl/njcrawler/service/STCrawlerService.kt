@@ -50,7 +50,7 @@ class STCrawlerService(private val bookingClient: SnalltagetClient) {
             time = time.plus(1, DateTimeUnit.DAY, getTimezone())
         }
 
-        return offers.distinctBy { it.departure }
+        return offers
     }
 
     private suspend fun callSTApiSafe(
@@ -58,7 +58,7 @@ class STCrawlerService(private val bookingClient: SnalltagetClient) {
         fromStation: Station,
         toStation: Station,
         startTime: Instant,
-        maxRequests: Int = 3
+        maxRequests: Int = 3,
     ): List<SimplifiedConnection> {
         val offers = mutableListOf<SimplifiedConnection>()
 
@@ -80,7 +80,7 @@ class STCrawlerService(private val bookingClient: SnalltagetClient) {
         }
 
         result.onFailure {
-            println("$trainId ${fromStation.name} - ${toStation.name}: error fetchting connections from $startTime")
+            println("$trainId ${fromStation.name} - ${toStation.name}: error fetching connections from $startTime")
             println(it.cause)
             println(it.message)
 

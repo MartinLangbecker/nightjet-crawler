@@ -1,23 +1,22 @@
 package eu.twatzl.njcrawler.service
 
-import eu.twatzl.njcrawler.apiclients.EuropeanSleeperClient
+import eu.twatzl.njcrawler.apiclients.TrenitaliaClient
 import eu.twatzl.njcrawler.model.SimplifiedConnection
 import eu.twatzl.njcrawler.model.Station
 import eu.twatzl.njcrawler.model.TrainConnection
+import eu.twatzl.njcrawler.util.getCurrentDay
 import eu.twatzl.njcrawler.util.getCurrentTime
 import eu.twatzl.njcrawler.util.getTimezone
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
 
-class ESCrawlerService(
-    private val bookingClient: EuropeanSleeperClient
-) {
+class TiCrawlerService(private val client: TrenitaliaClient) {
     suspend fun requestData(
         trains: List<TrainConnection>,
         totalTrainsRequested: Int,
-        startTime: Instant = getCurrentTime(),
+        startTime: Instant = getCurrentDay().atStartOfDayIn(getTimezone()),
     ): Map<TrainConnection, List<SimplifiedConnection>> {
         val offers = mutableMapOf<TrainConnection, List<SimplifiedConnection>>()
 
@@ -43,52 +42,50 @@ class ESCrawlerService(
         fromStation: Station,
         toStation: Station,
         startTime: Instant,
-        totalTrainsRequested: Int,
+        totalTrainsRequested: Int
     ): List<SimplifiedConnection> {
         val offers = mutableListOf<SimplifiedConnection>()
         var time = startTime
 
         repeat(totalTrainsRequested) { _ ->
-            offers.addAll(callESApiSafe(trainId, fromStation, toStation, time))
+            offers.addAll(callTiApiSafe(trainId, fromStation, toStation, time))
             time = time.plus(1, DateTimeUnit.DAY, getTimezone())
         }
 
         return offers
     }
 
-    private suspend fun callESApiSafe(
+    private suspend fun callTiApiSafe(
         trainId: String,
         fromStation: Station,
         toStation: Station,
         startTime: Instant,
         maxRequests: Int = 3,
     ): List<SimplifiedConnection> {
-        val trainNumber = trainId.split(" ").last() // remove train type for API request
-        val travelDate = startTime.toLocalDateTime(getTimezone())
         val offers = mutableListOf<SimplifiedConnection>()
 
         val result = runCatching {
-            bookingClient.getOffer(
-                trainNumber,
+            val solutions = client.getSolutions(
                 fromStation.id,
                 toStation.id,
-                travelDate,
-            )?.toSimplified(trainId, getCurrentTime())
+                startTime,
+            )
+            val trainNumber = trainId.split(" ").last()
+            val solutionId = solutions.solutions.first { it.solution.trains[0].name == trainNumber }.solution.id
+
+            client.getOffer(solutions.cartId, solutionId).toSimplified(trainId, getCurrentTime())
         }
 
         result.onSuccess {
-            if (it != null) {
-                offers.add(it)
-                println("$trainId: found connection on $startTime")
-            } else {
-                println("$trainId: no connection on $startTime")
-            }
+            offers.add(it)
+            println("$trainId: found connection on $startTime")
         }
 
         result.onFailure {
             println("$trainId ${fromStation.name} - ${toStation.name}: error fetching connections from $startTime")
             println(it.cause)
             println(it.message)
+            it.stackTrace.forEach { element -> println(element) }
 
             // on failure, we add error offers to indicate in the final csv that a timeout occurred
             repeat(maxRequests) { count ->

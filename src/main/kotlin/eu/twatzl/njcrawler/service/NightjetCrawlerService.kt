@@ -61,7 +61,7 @@ class NightjetCrawlerService(
                 getTimezone()
             )
         }
-        return offers.distinctBy { it.departure }
+        return offers
     }
 
     private suspend fun callNightjetApiSafe(

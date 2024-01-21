@@ -1,11 +1,13 @@
 package eu.twatzl.njcrawler.apiclients
 
-import eu.twatzl.njcrawler.model.fs.Solutions
-import eu.twatzl.njcrawler.model.fs.SolutionsRequest
-import eu.twatzl.njcrawler.model.fs.FsStation
+import eu.twatzl.njcrawler.model.ti.Solutions
+import eu.twatzl.njcrawler.model.ti.SolutionsRequest
+import eu.twatzl.njcrawler.model.ti.TiOffer
+import eu.twatzl.njcrawler.model.ti.TiStation
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.datetime.Instant
 
@@ -14,6 +16,9 @@ class TrenitaliaClient(
 ) {
     private val baseUrl = "https://www.lefrecce.it/Channels.Website.BFF.WEB/website"
 
+    /**
+     * search direct connections with intercity only for one adult
+     */
     suspend fun getSolutions(fromLocationId: String, toLocationId: String, travelDate: Instant): Solutions {
         return httpClient.post("$baseUrl/ticket/solutions") {
             headers {
@@ -27,8 +32,7 @@ class TrenitaliaClient(
         }.body<Solutions>()
     }
 
-    // TODO add return type
-    suspend fun getOffer(cartId: String, solutionId: String) {
+    suspend fun getOffer(cartId: String, solutionId: String): TiOffer {
         return httpClient.get("$baseUrl/customize/update/travellers") {
             headers {
                 append(
@@ -39,10 +43,10 @@ class TrenitaliaClient(
             parameter("cartId", cartId)
             parameter("solutionId", solutionId)
             parameter("adults", 1)
-        }.body()
+        }.body<TiOffer>()
     }
 
-    suspend fun searchStation(name: String, limit: Int = 10,): Array<FsStation?> {
+    suspend fun searchStation(name: String, limit: Int = 10): Array<TiStation?> {
         return httpClient.get("$baseUrl/locations/search") {
             headers {
                 append(
@@ -52,6 +56,6 @@ class TrenitaliaClient(
             }
             parameter("name", name)
             parameter("limit", limit)
-        }.body()
+        }.body<Array<TiStation?>>()
     }
 }

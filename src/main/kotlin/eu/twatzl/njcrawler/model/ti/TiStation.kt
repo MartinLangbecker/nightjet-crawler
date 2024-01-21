@@ -1,9 +1,9 @@
-package eu.twatzl.njcrawler.model.fs
+package eu.twatzl.njcrawler.model.ti
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FsStation(
+data class TiStation(
     val id: Int,
     val name: String,
     val displayName: String,

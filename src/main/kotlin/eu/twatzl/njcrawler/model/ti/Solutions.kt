@@ -1,4 +1,4 @@
-package eu.twatzl.njcrawler.model.fs
+package eu.twatzl.njcrawler.model.ti
 
 import kotlinx.serialization.Serializable
 
@@ -14,19 +14,14 @@ data class Solutions(
     ) {
         @Serializable
         data class Solution(
+            val id: String,
             val status: String,
             val trains: Array<Train>,
-            val price: Price
+            val price: Price?
         ) {
             @Serializable
             data class Train(
                 val name: String // train number
-            )
-
-            @Serializable
-            data class Price(
-                val currency: String,
-                val amount: Float,
             )
 
             override fun equals(other: Any?): Boolean {
@@ -35,6 +30,7 @@ data class Solutions(
 
                 other as Solution
 
+                if (id != other.id) return false
                 if (status != other.status) return false
                 if (!trains.contentEquals(other.trains)) return false
                 if (price != other.price) return false
@@ -43,7 +39,8 @@ data class Solutions(
             }
 
             override fun hashCode(): Int {
-                var result = status.hashCode()
+                var result = id.hashCode()
+                result = 31 * result + status.hashCode()
                 result = 31 * result + trains.contentHashCode()
                 result = 31 * result + price.hashCode()
                 return result

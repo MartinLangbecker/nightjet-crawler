@@ -1,4 +1,4 @@
-package eu.twatzl.njcrawler.model.fs
+package eu.twatzl.njcrawler.model.ti
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
